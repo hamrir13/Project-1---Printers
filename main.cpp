@@ -54,7 +54,7 @@ void processJobs()
 {
    int numOfPrinters, maxNumOfPages, numOfPrintJobs, printerSpeed;
 
-   setParameters(numOfPrinters, maxNumOfPages, numOfPrintJobs, printerSpeed);  
+   setParameters(numOfPrinters, maxNumOfPages, printerSpeed, numOfPrintJobs);  
 
    cout<<"Number of printers = "<<numOfPrinters<<endl;
    cout<<"The maxiumum number of pages a printer can process is "<<maxNumOfPages<<endl;
