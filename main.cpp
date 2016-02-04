@@ -1,6 +1,8 @@
 #include <iostream>
 #include <iomanip>
 
+#include "printer.cpp"
+
 using namespace std;
 
 
