@@ -11,7 +11,7 @@ using namespace std;
 void setParameters(int &numOfPrinters, int &maxNumOfPages, int &printerSpeed, 
 								int &numOfPrintJobs);
 
-//--------------------------------------------------------------------------------
+//===================================================================================
 
 /* A void function that processes all of the jobs that are assigned 
    to the printers
@@ -19,8 +19,29 @@ void setParameters(int &numOfPrinters, int &maxNumOfPages, int &printerSpeed,
 void processJobs();
 
 //===================================================================================
+
+int howManyPages(int &maxNumOfPages);
+
+//===================================================================================
 int main()
 {
+
+   char answer;
+   unsigned int seed;
+               
+   cout << "Would you like to enter your own seed for the simulation? [y/n]: ";
+   cin >> answer;
+
+   if(answer == 'y') {
+      cout<<"Enter a value for the seed ";
+      cin >> seed;
+      srand(seed);
+   } else {
+      seed = time(NULL);
+      srand(seed);
+   }
+
+   cout << "The seed used is " << seed << endl;
 
    processJobs();
 
@@ -60,4 +81,13 @@ void processJobs()
    cout<<"The maxiumum number of pages a printer can process is "<<maxNumOfPages<<endl;
    cout<<"The number of jobs the printer must perform is "<<numOfPrintJobs<<endl;
    cout<<"The speed (pages/min) of the printer is "<<printerSpeed<<endl;
+}
+
+int howManyPages(int &maxNumOfPages)
+{
+   int randomNumOfPages = 0;
+
+   randomNumOfPages = rand() % maxNumOfPages + 1;
+
+   return randomNumOfPages;
 }
