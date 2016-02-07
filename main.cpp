@@ -78,7 +78,7 @@ void processJobs()
    printerListType printerList(numOfPrinters);
 
    while(printerList.getNumJobsCompleted() != numOfPrintJobs){
-   //for(clock = 1; clock <= numOfPrintJobs; clock++){
+   //for(clock=1; clock<=numOfPrintJobs; clock++){
       printerList.updatePrinters(cout);
 
       if(jobNum <= numOfPrintJobs)
