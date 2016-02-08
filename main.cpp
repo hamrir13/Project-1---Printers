@@ -39,7 +39,23 @@ void createPrintJob(int maxNumOfPages, printJobQueueType printJobQueue[], int jo
 //===================================================================================
 int main()
 {
-   srand(time(NULL));   
+    char answer;
+    unsigned int seed;
+
+    cout << "Would you like to enter your own seed for the simulation? [y/n]: ";
+    cin >> answer;
+
+    if (answer == 'y' || answer =='Y') {
+        cout << "Enter a value for the seed ";
+        cin >> seed;
+        srand(seed);
+    }
+    else {
+        seed = time(NULL);
+        srand(seed);
+    }
+
+    cout << "The seed used is " << seed << endl;
 
    processJobs();
 
@@ -50,7 +66,7 @@ int main()
 void setParameters(int &numOfPrinters, int &maxNumOfPages, int &printerSpeed, 
       								int &numOfPrintJobs)
 {
-   cout << "Enter the number of printers to be used: "; 
+   cout << "Enter the number of printers to be used (1,2, or 3):"; 
    cin >> numOfPrinters;
    cout << endl;
 
