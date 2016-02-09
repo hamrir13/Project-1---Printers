@@ -74,7 +74,7 @@ int main()
 void setParameters(int &numOfPrinters, int &maxNumOfPages, int &printerSpeed,
                                                                 int &numOfPrintJobs)
 {
-   cout << "Enter '0' for any folowing value to use default" << endl << endl;
+   cout << "Enter '0' for any following value to use default" << endl << endl;
 
    cout << "Enter the number of printers to be used: ";
    cin >> numOfPrinters;
