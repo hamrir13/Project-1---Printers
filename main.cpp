@@ -192,22 +192,19 @@ void printResults(int numOfPrinters, int maxNumOfPages, int numOfPrintJobs, int 
    cout<<"The speed (pages/time unit) of the printer = "<<printerSpeed<<endl;
    cout<<endl<<"Total time to complete simulation = "<<time<<" time units."<<endl;
    cout<<"The average time for a Print Job to be completed = "<<avgWaitTime<<" time units."<<endl;
-   cout<<"The total cost to print all the pages = $"<<totalCost<<endl;
+   cout<<"The total cost to print all the pages = $"<< setprecision(2) << fixed << totalCost<<endl;
 
    if(avgWaitTime < 0.75 && numOfPrinters == 3){
       numOfPrinters-=2;
       double newCost = totalNumPages * (.1+(.005*numOfPrinters));
       double savings = totalCost - newCost;
-      cout<<"We recommend using two fewer printers. Doing so will reduce your cost by $"<<savings<<endl;
+      cout<<"We recommend using two fewer printers. Doing so will reduce your cost by $"<< setprecision(2) << fixed << savings<<endl;
    }else if(avgWaitTime < 2 && numOfPrinters > 1){
       numOfPrinters--;
       double newCost = totalNumPages * (.1+(.005*numOfPrinters));
       double savings = totalCost - newCost;
-      cout<<"We recommend using one fewer printer. Doing so will reduce your cost by $"<<savings<<endl;
+      cout<<"We recommend using one fewer printer. Doing so will reduce your cost by $"<< setprecision(2) << fixed << savings<<endl;
    }else
       cout<<"Your current implementation will suffice."<<endl;
    cout<<endl<<"************** END SIMULATION *****************"<<endl;
 }
-
-
-
