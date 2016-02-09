@@ -199,11 +199,15 @@ void printResults(int numOfPrinters, int maxNumOfPages, int numOfPrintJobs, int 
       double newCost = totalNumPages * (.1+(.005*numOfPrinters));
       double savings = totalCost - newCost;
       cout<<"We recommend using two fewer printers. Doing so will reduce your cost by $"<< setprecision(2) << fixed << savings<<endl;
+       cout<<"If you print this amount daily, then your annual saving would be $"<<setprecision(2)<<fixed
+          <<savings*365<<endl;
    }else if(avgWaitTime < 2 && numOfPrinters > 1){
       numOfPrinters--;
       double newCost = totalNumPages * (.1+(.005*numOfPrinters));
       double savings = totalCost - newCost;
       cout<<"We recommend using one fewer printer. Doing so will reduce your cost by $"<< setprecision(2) << fixed << savings<<endl;
+       cout<<"If you print this amount daily, then your annual saving would be $"<<setprecision(2)<<fixed
+          <<savings*365<<endl;
    }else
       cout<<"Your current implementation will suffice."<<endl;
    cout<<endl<<"************** END SIMULATION *****************"<<endl;
