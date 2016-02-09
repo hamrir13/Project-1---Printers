@@ -10,18 +10,19 @@ using namespace std;
 
 //***************** printJobType *****************
 
-void printJobType::setPrintJobInfo(int jobN, int inTime, int pageN)
+void printJobType::setPrintJobInfo(int jobN, int inTime, int pageN, int wTime)
 {
    jobNumber = jobN;
    arrivalTime = inTime;
    numberOfPages = pageN;
+   waitTime = wTime;
 }
 
-printJobType::printJobType(int jobN, int inTime, int pageN)
+printJobType::printJobType(int jobN, int inTime, int pageN, int wTime)
 {
-   setPrintJobInfo(jobN,inTime,pageN);
+   setPrintJobInfo(jobN,inTime,pageN,wTime);
 }
-      
+
 int printJobType::getJobNumber() const
 {
     return jobNumber;
@@ -31,40 +32,26 @@ int printJobType::getArrivalTime() const
 {
    return arrivalTime;
 }
-      
+
 int printJobType::getNumberOfPages() const
 {
    return numberOfPages;
 }
 
-/*
-int printJobType::getPrinterSpeed() const
+int printJobType::getWaitingTime() const
 {
-   return printerSpeed;
+   return waitTime;
 }
-      
-Note to Bobby:
-*  do we need the following?
-*     int customerType::getWaitingTime() const
-*     {
-*        return waitingTime;
-*     }
-*
-*     void customerType::incrementWaitingTime()
-*     {
-*         waitingTime++;
-*     }
-*
-*     void customerType::setWaitingTime(int time)
-*     {
-*         waitingTime = time;
-*     }
-*
-*     int customerType::getTransactionTime() const
-*     {
-*         return transactionTime;
-*     }
-*/
+
+void printJobType::incrementWaitingTime()
+{
+   waitTime++;
+}
+
+void printJobType::setWaitingTime(int time)
+{
+   waitTime = time;
+}
 
 //**************** printerType *******************
 
@@ -114,7 +101,6 @@ int printerType::getPrinterSpeed()
 {
    return printerSpeed;
 }
-
 void printerType::setCurrentPrintJob(printJobType cPrintJob)
 {
    currentPrintJob = cPrintJob;
@@ -128,6 +114,11 @@ int printerType::getCurrentPrintJobNumber() const
 int printerType::getCurrentPrintJobArrivalTime() const
 {
    return currentPrintJob.getArrivalTime();
+}
+
+int printerType::getCurrentPrintJobWaitTime() const
+{
+   return currentPrintJob.getWaitingTime();
 }
 
 //***************** printerListType ***************
@@ -159,7 +150,6 @@ int printerListType::getFreePrinterID() const
 
    return printerID;
 }
-
 int printerListType::getNumJobsCompleted() const
 {
    return numJobsCompleted;
@@ -205,16 +195,39 @@ void printerListType::updatePrinters(ostream& outFile)
                         << "\n     is now completed."
                         << endl;
                 printers[i].setFree();
-		numJobsCompleted++;
+                numJobsCompleted++;
             }
         }
 }
-
 //**************** printJobQueue ****************
 
 printJobQueueType::printJobQueueType()
-		   :queue<printJobType>()
+                   :queue<printJobType>()
 {
 }
+
+void printJobQueueType::updatePrintJobQueue()
+{
+   printJobType printJob;
+
+   printJob.setWaitingTime(-1);
+   int wTime = 0;
+
+   push(printJob);
+
+   while(wTime != -1)
+   {
+      printJob = front();
+      pop();
+
+      wTime = printJob.getWaitingTime();
+      if(wTime == -1)
+         break;
+      printJob.incrementWaitingTime();
+      push(printJob);
+   }
+}
+
+
 
 
