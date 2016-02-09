@@ -8,68 +8,52 @@ using namespace std;
 class printJobType
 {
 public:
-   printJobType(int jobNum = 0, int arrvTime = 0, int pageNum = 0); 
-   
+   printJobType(int jobNum = 0, int arrvTime = 0, int pageNum = 0, int wTime = 0);
     //Constructor to initialize the instance variables
     //according to the parameters
-    //If no value is specified in the object declaration, 
+    //If no value is specified in the object declaration,
     //the default values are assigned.
     //Postcondition: jobNumber = jobNum;
     //               arrivalTime = arrvTime;
     //               numberOfPages = pageNum;
-   
-   void setPrintJobInfo(int jobN = 0, int inTime = 0, int pageN = 0);
-   
+    //               waitTime = wTime;
+
+   void setPrintJobInfo(int jobN = 0, int inTime = 0, int pageN = 0, int wTime = 0);
     //Function to initialize the instance variables.
     //Instance variables are set according to the parameters.
     //Postcondition: jobNumber = jobN;
     //               arrivalTime = inTime;
     //               numberOfPages = pageN;
-   
+    //               waitTime = wTime;
    int getJobNumber() const;
-
     //Function to return the job number.
     //Postcondition: The value of jobNumber is returned.
-   
-   int getArrivalTime() const;
 
+   int getArrivalTime() const;
     //Function to return the arrival time of a job.
     //Postcondition: The value of arrivalTime is returned.
 
    int getNumberOfPages() const;
-
     //Function to return the number of pages for a print job.
     //Postcondition: The value of numberOfPages is returned.
-    
-   int getPrinterSpeed() const;
 
-    //Function to return the printer speed.
-    //Postcondition: The value of printerSpeed is returned.
-/*
- * Note to Bobby.
- * Do we need the following?
- *    int getWaitingTime() const;
- *     //Function to return the waiting time of a customer.
- *     //Postcondition: The value of waitingTime is returned.
- *
- *    void setWaitingTime(int time);
- *     //Function to set the waiting time of a customer.
- *     //Postcondition: waitingTime = time;
- *
- *    void incrementWaitingTime();
- *     //Function to increment the waiting time by one time unit.
- *     //Postcondition: waitingTime++;
- *    
- *    int getTransactionTime() const;
- *     //Function to return the transaction time of a customer.
- *     //Postcondition: The value of transactionTime is returned.
- */
+   int getWaitingTime() const;
+    //Function to return the waiting time of each print Job.
+    //Postcondition: the value of waitingTime is returned.
+
+   void incrementWaitingTime();
+    //Function to increment the waiting time of the print job
+    //Postcondition: waitTime++
+
+   void setWaitingTime(int time);
+    //Function to set the waiting time of the print job
+    //Postcondition: waitTime = time;
 
 private:
    int jobNumber;
    int arrivalTime;
    int numberOfPages;
-   int printerSpeed;
+   int waitTime;
 };
 
 //****************** printerType *******************
@@ -83,7 +67,7 @@ public:
       //Postcondition: currentPrinter is initialized by its
       //               default constructor; status = "free"; and
       //               the printer speed is initialized to 0 and
-      //	       printerSpeed = pSpeed
+      //               printerSpeed = pSpeed
 
    bool isFree() const;
       //Function to determine if the printer is free.
@@ -110,7 +94,7 @@ public:
     void decreasePrintPages(int p);
       //Function to decrease the amount of pages to print by p.
       //Postcondition: remainingPages -= p;
-   
+
      void setPrinterSpeed(int pSpeed);
        //Function to set the printer speed
        //Postcondition: printerSpeed = pSpeed.
@@ -118,7 +102,7 @@ public:
     int getPrinterSpeed();
       //Function to return the speed of the printer
       //Postcondition: The value of printerSpeed is returned.
-
+      
     void setCurrentPrintJob(printJobType cPrintJob);
       //Function to set the info of the current printer
       //according to the parameter cPrinter.
@@ -136,6 +120,11 @@ public:
       //Postcondition: The value of arrivalTime of the current
       //               print job is returned.
 
+    int getCurrentPrintJobWaitTime() const;
+      //Function to return the waiting time of the current printer
+      //Postcondition: the value of waitingTime of the current
+      //                print Job is returned.
+
 private:
    printJobType currentPrintJob;
    string status;
@@ -146,13 +135,13 @@ private:
 //****************** printerListType *****************
 class printerListType
 {
-public: 
+public:
    printerListType(int num = 1);
       //Constructor to initialize a list of printers
       //Postcondition: numOfPrinters = num
       //               A list of printers, specified by num,
       //               is created and each printer is
-      //               initialized to "free". 
+      //               initialized to "free".
 
    ~printerListType();
       //Destructor
@@ -190,7 +179,7 @@ public:
       //               parameter corresponding to outFile is
       //               cout, a message indicating which job
       //               has been performed is printed on the screen,
-      //               together with the job's completion 
+      //               together with the job's completion
       //               time. Otherwise, the output is sent to
       //               a file specified by the user.
 
@@ -210,9 +199,10 @@ public:
       //Postcondition: The vector is initialized according to
       //               the parameter size. The value of size
       //               is passed to the constructor of a vector.
-};
-/*   
-   void updatePrintJobQueue();
+
+void updatePrintJobQueue();
       //Function to increment the waiting time of each
       //print job in the queue by one time unit.
-*/
+
+};
+
