@@ -1,15 +1,14 @@
 /* Group #3: Bobby Hamrick, Rick Stingel, Taylor Ferguson
    Class: CSC 3710
-   
-   This code simulates tasks being sent to the printer(s). As tasks come in, they 
+
+   This code simulates tasks being sent to the printer(s). As tasks come in, they
    are categorized based on the size of the task and are sent into an appropriate
-   waiting queue. The smaller task sizes are printed first. 
+   waiting queue. The smaller task sizes are printed first.
 
 */
 
 #include <iostream>
 #include <iomanip>
-#include <cstdlib>
 #include "printers.h"
 
 using namespace std;
@@ -19,12 +18,12 @@ using namespace std;
    Post-condition: maxNumOfPages,printerSpeed,numOfPrintJobs,numOfPrinters are
                    all set to the appropriate values entered by the user.
 */
-void setParameters(int &numOfPrinters, int &maxNumOfPages, int &printerSpeed, 
-								int &numOfPrintJobs);
+void setParameters(int &numOfPrinters, int &maxNumOfPages, int &printerSpeed,
+                                                                int &numOfPrintJobs);
 
 //--------------------------------------------------------------------------------
 
-/* A void function that processes all of the jobs that are assigned 
+/* A void function that processes all of the jobs that are assigned
    to the printers
 */
 void processJobs();
@@ -34,28 +33,36 @@ void processJobs();
 /* A void function that creates of print job with a random number of
    pages and adds it to the printJobQueue
 */
-void createPrintJob(int maxNumOfPages, printJobQueueType printJobQueue[], int jobNum, int time);
+int createPrintJob(int maxNumOfPages, printJobQueueType printJobQueue[], int jobNum, int time);
+
+//--------------------------------------------------------------------------------
+
+/* A void function that prints the results from the simulation and determines the efficiency
+   of the current implementation of printers. Then gives advice as to what they should do.
+*/
+void printResults(int numOfPrinters, int maxNumOfPages, int numOfPrintJobs, int printerSpeed, int time,                  int totalNumPages, double avgWaitTime, double totalCost);
+
 
 //===================================================================================
 int main()
 {
-    char answer;
-    unsigned int seed;
 
-    cout << "Would you like to enter your own seed for the simulation? [y/n]: ";
-    cin >> answer;
+   char answer;
+   unsigned int seed;
 
-    if (answer == 'y' || answer =='Y') {
-        cout << "Enter a value for the seed ";
-        cin >> seed;
-        srand(seed);
-    }
-    else {
-        seed = time(NULL);
-        srand(seed);
-    }
+   cout << "Would you like to enter your own seed for the simulation? [y/n]: ";
+   cin >> answer;
 
-    cout << "The seed used is " << seed << endl;
+   if(answer == 'y') {
+      cout<<"Enter a value for the seed ";
+      cin >> seed;
+      srand(seed);
+   }else{
+      seed = time(NULL);
+      srand(seed);
+   }
+
+   cout << "The seed used is " << seed << endl;
 
    processJobs();
 
@@ -63,10 +70,10 @@ int main()
 }
 
 //=====================================================================================
-void setParameters(int &numOfPrinters, int &maxNumOfPages, int &printerSpeed, 
-      								int &numOfPrintJobs)
+void setParameters(int &numOfPrinters, int &maxNumOfPages, int &printerSpeed,
+                                                                int &numOfPrintJobs)
 {
-   cout << "Enter the number of printers to be used (1,2, or 3):"; 
+   cout << "Enter the number of printers to be used: ";
    cin >> numOfPrinters;
    cout << endl;
 
@@ -78,59 +85,118 @@ void setParameters(int &numOfPrinters, int &maxNumOfPages, int &printerSpeed,
    cin >> numOfPrintJobs;
    cout << endl;
 
-   cout << "Enter the speed (pages/min) of the printer: ";
+   cout << "Enter the speed (pages/time unit) of the printer: ";
    cin >> printerSpeed;
    cout << endl;
 }
- 
+
 
 //====================================================================================
 void processJobs()
 {
-   int numOfPrinters, maxNumOfPages, numOfPrintJobs, printerSpeed, numberOfPages;
-   int jobNum = 0, numJobsCompleted = 0, clock = 0;
-   setParameters(numOfPrinters, maxNumOfPages, printerSpeed, numOfPrintJobs);  
+   int numOfPrinters, maxNumOfPages, numOfPrintJobs, printerSpeed; //variables for parameters
+   int jobNum = 0, totalWaitTime = 0, clock = 0, totalNumPages = 0;//variables for keeping track of sim 
+   //Set the simulation parameters. Each given by the user
+   setParameters(numOfPrinters, maxNumOfPages, printerSpeed, numOfPrintJobs);
 
-   printJobQueueType printJobQueue[3]; 
+   //Create an array of queues that will hold the print jobs based on their priority
+   printJobQueueType printJobQueue[3];
+
+   //Declare a list of printers of size numOfPrinters (based on user input)
    printerListType printerList(numOfPrinters);
 
+   //Create Jobs and process them through the printers until all jobs are complete
    while(printerList.getNumJobsCompleted() != numOfPrintJobs){
-   //for(clock=1; clock<=numOfPrintJobs; clock++){
-      printerList.updatePrinters(cout);
 
-      if(jobNum <= numOfPrintJobs)
-         createPrintJob(maxNumOfPages, printJobQueue, ++jobNum, clock);
-      
-      for(int j=0;j<numOfPrinters;j++){ 
-         while(printerList.getNumberOfBusyPrinters() != numOfPrinters &&  
+      clock++; //increase the clock
+
+      printerList.updatePrinters(cout); //update the current status of the printers
+
+      //if neccessary, increase the waiting time of each job in the queue
+      for(int i=0;i<3;i++)
+         if(!printJobQueue[i].empty())
+            printJobQueue[i].updatePrintJobQueue();
+
+      //create jobs until the maximum number of print jobs is completed
+      if(jobNum < numOfPrintJobs){
+         totalNumPages += createPrintJob(maxNumOfPages, printJobQueue, ++jobNum, clock);
+      }
+
+      //Send Print Jobs to printers that are free
+      for(int j=0;j<3;j++){
+         while(printerList.getNumberOfBusyPrinters() != numOfPrinters &&
               !printJobQueue[j].empty()){
                 cout<<"Print Job Number "<<printJobQueue[j].front().getJobNumber()
-                    <<" was sent to printer "<<(printerList.getFreePrinterID()+1)<<endl;
+                    <<" was sent to printer "<<(printerList.getFreePrinterID()+1)
+                    <<" at time unit "<<clock<<endl;
                 printJobType printJob = printJobQueue[j].front();
-		printJobQueue[j].pop();
+                totalWaitTime += printJob.getWaitingTime();
+                printJobQueue[j].pop();
                 printerList.setPrinterBusy(printerList.getFreePrinterID(),printJob,
-									   printerSpeed);
-         }   
+                                                                           printerSpeed);
+         }
       }
-      clock++;
    }
-   cout<<"Number of printers = "<<numOfPrinters<<endl;
-   cout<<"The maxiumum number of pages a printer can process is "<<maxNumOfPages<<endl;
-   cout<<"The number of jobs the printer must perform is "<<numOfPrintJobs<<endl;
-   cout<<"The speed (pages/min) of the printer is "<<printerSpeed<<endl;
+
+   //calculate the average wait time for each job before it is completely printed
+   double avgWaitTime = ((double)totalWaitTime)/numOfPrintJobs;
+
+   //calculate the total cost to print out all pages
+   double totalCost = totalNumPages * (0.1 + (.005*numOfPrinters));
+
+   //print the results of the simulation and determine efficiency
+printResults(numOfPrinters, maxNumOfPages, numOfPrintJobs, printerSpeed, clock, totalNumPages,
+                avgWaitTime, totalCost);
 }
 
-
-void createPrintJob(int maxNumOfPages, printJobQueueType printJobQueue[], int jobNum, int time)
+//=============================================================================================
+int createPrintJob(int maxNumOfPages, printJobQueueType printJobQueue[], int jobNum, int time)
 {
-   int numPages = rand() % maxNumOfPages + 1;
-   
-   printJobType printJob(jobNum, time, numPages);
-   
-   if(numPages <= 10)
+   int numPages = rand() % maxNumOfPages + 1; //select a random number of pages for the job
+   int wTime = 0; //set the waitTime for the Print Jobs to zero, initially
+
+   printJobType printJob(jobNum, time, numPages, wTime); //create the print job
+
+   if(numPages <= 10){
       printJobQueue[0].push(printJob);
-   else if(numPages <=20)
+      cout<<"Print Job Number "<<jobNum<<" of size "<<numPages<<" page(s) was placed in the HIGH priority queue."<<endl;
+   }else if(numPages <=20){
       printJobQueue[1].push(printJob);
-   else
+      cout<<"Print Job Number "<<jobNum<<" of size "<<numPages<<" pages was placed in the MEDIUM priority queue."<<endl;
+   }else{
       printJobQueue[2].push(printJob);
+      cout<<"Print Job Number "<<jobNum<<" of size "<<numPages<<" pages was placed in the LOW priority queue."<<endl;
+   }
+   return numPages;
 }
+
+//============================================================================================
+void printResults(int numOfPrinters, int maxNumOfPages, int numOfPrintJobs, int printerSpeed, int time
+                  ,int totalNumPages, double avgWaitTime, double totalCost)
+{
+   cout<<endl<<"************** FINAL RESULTS *****************"<<endl<<endl;
+   cout<<"Number of printers = "<<numOfPrinters<<endl;
+   cout<<"The maxiumum number of pages a printer can process = "<<maxNumOfPages<<endl;
+   cout<<"The number of jobs the printer processed = "<<numOfPrintJobs<<endl;
+   cout<<"The speed (pages/time unit) of the printer = "<<printerSpeed<<endl;
+   cout<<endl<<"Total time to complete simulation = "<<time<<" time units."<<endl;
+   cout<<"The average time for a Print Job to be completed = "<<avgWaitTime<<" time units."<<endl;
+   cout<<"The total cost to print all the pages = $"<<totalCost<<endl;
+
+   if(avgWaitTime < 0.75 && numOfPrinters == 3){
+      numOfPrinters-=2;
+      double newCost = totalNumPages * (.1+(.005*numOfPrinters));
+      double savings = totalCost - newCost;
+      cout<<"We recommend using two fewer printers. Doing so will reduce your cost by $"<<savings<<endl;
+   }else if(avgWaitTime < 2 && numOfPrinters > 1){
+      numOfPrinters--;
+      double newCost = totalNumPages * (.1+(.005*numOfPrinters));
+      double savings = totalCost - newCost;
+      cout<<"We recommend using one fewer printer. Doing so will reduce your cost by $"<<savings<<endl;
+   }else
+      cout<<"Your current implementation will suffice."<<endl;
+   cout<<endl<<"************** END SIMULATION *****************"<<endl;
+}
+
+
+
