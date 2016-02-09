@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <stdlib.h>
 #include "printers.h"
 
 using namespace std;
@@ -73,21 +74,31 @@ int main()
 void setParameters(int &numOfPrinters, int &maxNumOfPages, int &printerSpeed,
                                                                 int &numOfPrintJobs)
 {
+   cout << "Enter '0' for any folowing value to use default" << endl << endl;
+
    cout << "Enter the number of printers to be used: ";
    cin >> numOfPrinters;
    cout << endl;
+   if(numOfPrinters==0)
+      numOfPrinters=3;
 
    cout << "Enter the maximum number of pages a printer can process: ";
    cin >> maxNumOfPages;
    cout << endl;
+   if(maxNumOfPages==0)
+      maxNumOfPages=30;
 
    cout << "Enter number of print jobs to be accomplished: ";
    cin >> numOfPrintJobs;
    cout << endl;
+   if(numOfPrintJobs==0)
+      numOfPrintJobs=100;
 
    cout << "Enter the speed (pages/time unit) of the printer: ";
    cin >> printerSpeed;
    cout << endl;
+   if(printerSpeed==0)
+      printerSpeed=10;
 }
 
 
