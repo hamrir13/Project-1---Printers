@@ -50,17 +50,26 @@ int main()
 
    char answer;
    unsigned int seed;
+   string outName;
 
    cout << "Would you like to enter your own seed for the simulation? [y/n]: ";
    cin >> answer;
 
-   if(answer == 'y') {
+   if(answer == 'y' || answer == 'Y') {
       cout<<"Enter a value for the seed ";
       cin >> seed;
       srand(seed);
    }else{
       seed = time(NULL);
       srand(seed);
+   }
+
+
+   cout << "Would you like to output to a file?: ";
+   cin >> answer;
+   if (answer == 'y' || answer == 'Y') {
+      cout << "enter the name of the file to output to: ";
+      cin >> outName;
    }
 
    cout << "The seed used is " << seed << endl;
