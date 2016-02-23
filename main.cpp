@@ -11,9 +11,13 @@
 #include <iomanip>
 #include <stdlib.h>
 #include "printers.h"
+#include <fstream>
 
 using namespace std;
 
+bool printToFile;
+
+std::fstream file;
 
 /* A void function that sets the parameters to being the simulation.
    Post-condition: maxNumOfPages,printerSpeed,numOfPrintJobs,numOfPrinters are
@@ -44,10 +48,13 @@ int createPrintJob(int maxNumOfPages, printJobQueueType printJobQueue[], int job
 void printResults(int numOfPrinters, int maxNumOfPages, int numOfPrintJobs, int printerSpeed, int time,                  int totalNumPages, double avgWaitTime, double totalCost);
 
 
+/*  outputs the string to both a read file and to the screen.
+*/
+void output(char string);
+
 //===================================================================================
 int main()
 {
-
    char answer;
    unsigned int seed;
    string outName;
@@ -64,17 +71,26 @@ int main()
       srand(seed);
    }
 
-
-   cout << "Would you like to output to a file?: ";
+/*   cout << "Would you like to output to a file?: ";
    cin >> answer;
    if (answer == 'y' || answer == 'Y') {
-      cout << "enter the name of the file to output to: ";
+      printToFile = true;
+      cout << "Enter file name to write to: " << endl;
       cin >> outName;
+      file.open(outName.c_str());
+   }
+   else
+   {
+       printToFile = false;
    }
 
-   cout << "The seed used is " << seed << endl;
-
+   cout << "The seed used is ";
+   output(seed);
+*/
+   cout << "the seed used is: " << seed << endl;
    processJobs();
+
+//   file.close();
 
    return 0;
 }
@@ -220,4 +236,10 @@ void printResults(int numOfPrinters, int maxNumOfPages, int numOfPrintJobs, int 
    }else
       cout<<"Your current implementation will suffice."<<endl;
    cout<<endl<<"************** END SIMULATION *****************"<<endl;
+}
+
+
+void output(char string){
+    cout << string << endl;
+    file << string << endl;
 }
