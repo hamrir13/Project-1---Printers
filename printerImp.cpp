@@ -22,7 +22,7 @@ printJobType::printJobType(int jobN, int inTime, int pageN, int wTime)
 {
    setPrintJobInfo(jobN,inTime,pageN,wTime);
 }
-      
+
 int printJobType::getJobNumber() const
 {
     return jobNumber;
@@ -32,7 +32,7 @@ int printJobType::getArrivalTime() const
 {
    return arrivalTime;
 }
-      
+
 int printJobType::getNumberOfPages() const
 {
    return numberOfPages;
@@ -52,7 +52,6 @@ void printJobType::setWaitingTime(int time)
 {
    waitTime = time;
 }
-
 
 //**************** printerType *******************
 
@@ -188,27 +187,6 @@ int printerType::getTotalJobsCompleted()
    return numJobsCompleted;
 }
 
-
-void printerType::checkForFailure(double percentFail, int offlineTime)
-{
-   double failure = percentFail/100;
-
-   if(status == "busy"){
-      int rNum = rand() % 10;
-      double rDecimal = rNum/9.0;      
-      if(rDecimal < failure){
-         status = "failed";
-         maintTime = offlineTime;
-         cout<<"printer failed."<<endl;
-      }
-   }if(status == "failed" && maintTime > 0){
-      maintTime--;
-      cout<<"printer failed and has "<<maintTime<<" minutes left."<<endl;
-      if(maintTime == 0)
-         status = "free";
-   }
-}
-
 //***************** printerListType ***************
 
 printerListType::printerListType(int num)
@@ -281,9 +259,11 @@ void printerListType::checkFailure(double percentFail, int offlineTime)
             cout<<"Printer number "<<i+1<<" failed."<<endl;
             break;
          }
-      }else if(printers[i].returnStatus() == "failed" && printers[i].getMaintTime() > 0){
+      }else if(printers[i].returnStatus() == "failed" && 
+				printers[i].getMaintTime() > 0){
          printers[i].decreaseMaintTime();
-         cout<<"Printer number "<<i+1<<" failed and has "<<printers[i].getMaintTime()<<" minutes left."<<endl;
+         cout<<"Printer number "<<i+1<<" failed and has "
+	     <<printers[i].getMaintTime()<<" minutes left."<<endl;
          if(printers[i].getMaintTime() == 0)
             printers[i].setBusy();
       }
@@ -295,13 +275,15 @@ void printerListType::checkMaintenence(int numMaintPages, int maintenenceTime)
    for(int i=0;i<numOfPrinters;i++){
       if(printers[i].isFree()){
          if(printers[i].getCurrentPagesPrinted() >= numMaintPages){
-            cout<<"Total pages printer by printer "<<i+1<<" is "<<printers[i].getCurrentPagesPrinted()<<endl;
+            cout<<"Total pages printer by printer "<<i+1<<" is "
+		<<printers[i].getCurrentPagesPrinted()<<endl;
             printers[i].setToMaintenence();
             printers[i].setMaintTime(maintenenceTime);
             printers[i].resetCurrentPagesPrinted();
             cout<<"Printer number "<<i+1<<" is under maintenence."<<endl;
          }
-      }else if(printers[i].returnStatus() == "maintenence" && printers[i].getCurrentPagesPrinted() == 0){
+      }else if(printers[i].returnStatus() == "maintenence" && 
+			printers[i].getCurrentPagesPrinted() == 0){
          if(printers[i].getMaintTime() > 0){  
             printers[i].decreaseMaintTime();
             if(printers[i].getMaintTime() == 0){
@@ -327,14 +309,13 @@ void printerListType::setPrinterBusy(int printerID,
     printers[printerID].increaseJobsCompleted();
 }
 
-void printerListType::updatePrinters(ostream& outFile, double percentFail, int offlineTime)
+void printerListType::updatePrinters(ostream& outFile)
 {
     int i;
 
     for (i = 0; i < numOfPrinters; i++)
         if (!printers[i].isFree() && printers[i].getMaintTime() == 0)
         {
-            //printers[i].checkForFailure(percentFail, offlineTime);
             printers[i].decreasePrintPages(printers[i].getPrinterSpeed());
 
             if (printers[i].getRemainingPrintPages() <= 0)

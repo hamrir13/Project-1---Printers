@@ -87,6 +87,23 @@ int main()
 
    cout << "The seed used is " << seed << endl;
 
+/* cout << "Would you like to output to a file?: ";
+   cin >> answer;
+   if (answer == 'y' || answer == 'Y') {
+      printToFile = true;
+      cout << "Enter file name to write to: " << endl;
+      cin >> outName;
+      file.open(outName.c_str());
+   }
+   else
+   {
+       printToFile = false;
+   }
+
+   cout << "The seed used is ";
+   output(seed);
+*/
+
    processJobs();
 
    return 0;
@@ -216,7 +233,7 @@ void processJobs()
  
       //update the current status of the printers
       printerList.checkFailure(percentFail,offlineTime);
-      printerList.updatePrinters(cout, percentFail, offlineTime); 
+      printerList.updatePrinters(cout); 
       if(printerList.getNumJobsCompleted() < numOfPrintJobs)
          printerList.checkMaintenence(numMaintPages,maintenenceTime);
 
@@ -298,7 +315,7 @@ int numJobsArrived(int numJobsPerMin)
 
 }       
    
-//=============================================================================================
+//======================================================================================
 int createPrintJob(int whichTier, printJobQueueType printJobQueue[], int jobNum, int time,		     int cutOff[])
 {
    int numPages;
@@ -319,7 +336,7 @@ int createPrintJob(int whichTier, printJobQueueType printJobQueue[], int jobNum,
    return numPages;
 }
 
-//=======================================================================================
+//=====================================================================================
 int whichTier(int numTiers)
 {
    double prob[numTiers-1];
@@ -344,7 +361,7 @@ int whichTier(int numTiers)
    return result;
 } 
 
-//=======================================================================================
+//=====================================================================================
 int factorial(int n)
 {
    if(n == 0)
@@ -353,9 +370,10 @@ int factorial(int n)
       return n * factorial(n-1);
 }
  
-//============================================================================================
-void printResults(int numOfPrinters, int maxNumOfPages, int numOfPrintJobs, int *printerSpeed, int time
-		  ,int totalNumPages, double avgWaitTime, double totalCost)
+//=====================================================================================
+void printResults(int numOfPrinters, int maxNumOfPages, int numOfPrintJobs, 
+		  int *printerSpeed, int time, int totalNumPages, double avgWaitTime, 
+		  double totalCost)
 {
    cout<<endl<<"************** FINAL RESULTS *****************"<<endl<<endl;
    
@@ -371,7 +389,7 @@ void printResults(int numOfPrinters, int maxNumOfPages, int numOfPrintJobs, int 
 
 }
 
-//============================================================================================
+//=====================================================================================
 void printTierResults(printJobQueueType printJobQueue[], int numTiers)
 {
    cout<<endl<<"************ TIER INFO ***************"<<endl;

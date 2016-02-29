@@ -8,15 +8,15 @@ using namespace std;
 class printJobType
 {
 public:
-   printJobType(int jobNum = 0, int arrvTime = 0, int pageNum = 0, int wTime = 0); 
+   printJobType(int jobNum = 0, int arrvTime = 0, int pageNum = 0, int wTime = 0);
     //Constructor to initialize the instance variables
     //according to the parameters
-    //If no value is specified in the object declaration, 
+    //If no value is specified in the object declaration,
     //the default values are assigned.
     //Postcondition: jobNumber = jobNum;
     //               arrivalTime = arrvTime;
     //               numberOfPages = pageNum;
-    //		     waitTime = wTime;
+    //               waitTime = wTime;
 
    void setPrintJobInfo(int jobN = 0, int inTime = 0, int pageN = 0, int wTime = 0);
     //Function to initialize the instance variables.
@@ -25,6 +25,7 @@ public:
     //               arrivalTime = inTime;
     //               numberOfPages = pageN;
     //               waitTime = wTime;   
+   
    int getJobNumber() const;
     //Function to return the job number.
     //Postcondition: The value of jobNumber is returned.
@@ -67,7 +68,7 @@ public:
       //Postcondition: currentPrinter is initialized by its
       //               default constructor; status = "free"; and
       //               the printer speed is initialized to 0 and
-      //	       printerSpeed = pSpeed
+      //               printerSpeed = pSpeed
 
    bool isFree() const;
       //Function to determine if the printer is free.
@@ -108,8 +109,8 @@ public:
     void decreasePrintPages(int p);
       //Function to decrease the amount of pages to print by p.
       //Postcondition: remainingPages -= p;
-   
-     void setPrinterSpeed(int pSpeed);
+     
+    void setPrinterSpeed(int pSpeed);
        //Function to set the printer speed
        //Postcondition: printerSpeed = pSpeed.
 
@@ -256,7 +257,7 @@ public:
       //               print time is set according to the
       //               parameter pTime.
 
-    void updatePrinters(ostream& outFile, double percentFail, int offlineTime);
+    void updatePrinters(ostream& outFile);
       //Function to update the status of a printer.
       //Postcondition: The print time of each busy
       //               server is decremented by the printer speed. If
