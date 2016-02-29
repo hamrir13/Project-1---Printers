@@ -111,6 +111,16 @@ void printerType::decreasePrintPages(int p)
    remainingPages -= p;
 }
 
+void printerType::setCost(int cost)
+{
+   printerCost = cost;
+}
+
+double printerType::getPrinterCost()
+{
+   return printerCost;
+}
+
 void printerType::setPrinterSpeed(int pSpeed)
 {
    printerSpeed = pSpeed;
@@ -189,11 +199,13 @@ int printerType::getTotalJobsCompleted()
 
 //***************** printerListType ***************
 
-printerListType::printerListType(int num)
+printerListType::printerListType(double *printerCost, int num)
 {
    numOfPrinters = num;
    printers = new printerType[num];
    numJobsCompleted = 0;
+   for(int i=0; i<num; i++)
+      printers[i].setCost(printerCost[i]);
 }
 
 printerListType::~printerListType()
@@ -217,9 +229,32 @@ int printerListType::getFreePrinterID() const
    return printerID;
 }
 
+int printerListType::assignRandomPrinter()
+{
+   int freePrinters[numOfPrinters];
+   
+   for(int i=0; i<numOfPrinters; i++){
+      if(printers[i].isFree())
+         freePrinters[i] = 1;
+      else
+         freePrinters[i] = 0;
+   }
+    
+   int r = rand() % numOfPrinters;
+   while(freePrinters[r] != 1)
+      r = rand() % numOfPrinters;
+
+   return r;
+}
+
 int printerListType::getNumJobsCompleted() const
 {
    return numJobsCompleted;
+}
+
+double printerListType::getCurrentPrinterCost(int printerID)
+{
+   return printers[printerID].getPrinterCost();
 }
 
 int printerListType::getNumberOfBusyPrinters() const
@@ -306,7 +341,6 @@ void printerListType::setPrinterBusy(int printerID,
     printers[printerID].setCurrentPrintJob(cPrintJob);
     printers[printerID].setRemainingPages(cPrintJob.getNumberOfPages());
     printers[printerID].addTotalPages(cPrintJob.getNumberOfPages());
-    printers[printerID].increaseJobsCompleted();
 }
 
 void printerListType::updatePrinters(ostream& outFile)
@@ -327,6 +361,7 @@ void printerListType::updatePrinters(ostream& outFile)
                         << endl;
                 printers[i].setFree();
 		numJobsCompleted++;
+                printers[i].increaseJobsCompleted();
             }
         }
 }

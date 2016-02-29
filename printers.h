@@ -109,6 +109,14 @@ public:
     void decreasePrintPages(int p);
       //Function to decrease the amount of pages to print by p.
       //Postcondition: remainingPages -= p;
+    
+    void setCost(int cost);
+      //Function to set the cost of the printer
+      //Postcondition: printerCost = cost
+
+    double getPrinterCost();
+      //Function to return the cost of the printer
+      //Postcondition: return printerCost
      
     void setPrinterSpeed(int pSpeed);
        //Function to set the printer speed
@@ -193,13 +201,14 @@ private:
    int totalPagesPrinted;
    int currentPagesPrinted;
    int numJobsCompleted;
+   double printerCost;
 };
 
 //****************** printerListType *****************
 class printerListType
 {
 public: 
-   printerListType(int num = 1);
+   printerListType(double *printerCost, int num = 1);
       //Constructor to initialize a list of printers
       //Postcondition: numOfPrinters = num
       //               A list of printers, specified by num,
@@ -219,9 +228,18 @@ public:
       //Function to return the number of busy printers.
       //Postcondition: The number of busy printers is returned.
 
+    int assignRandomPrinter();
+      //Function to return a random integer that represents
+      //the printer that will take the next job
+      //Postcondition: value of a random integer is returned
+
     int getNumJobsCompleted() const;
        //Function to return the number of jobs the printers have completed
        //Postcondition: The number of jobs completed is returned
+    
+    double getCurrentPrinterCost(int printerID);
+       //Function to get the cost of the printerID printer
+       //Postcondition: the cost of the printerID printer is returned.
 
     int totalPagesPrintedByPrinter(int printerNum);
        //Function to return the number of pages printed by

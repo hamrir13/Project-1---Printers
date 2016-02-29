@@ -224,8 +224,9 @@ void processJobs()
    printJobQueue = new printJobQueueType[numTiers]; 
    
    //Declare a list of printers of size numOfPrinters (based on user input)
-   printerListType printerList(numOfPrinters);
-
+   printerListType printerList(printerCost, numOfPrinters);
+   for(int i=0;i<numOfPrinters;i++)
+      cout<<"COST OF PRINTER "<<i+1<<": "<<printerList.getCurrentPrinterCost(i)<<endl;
    //Create Jobs and process them through the printers until all jobs are complete
    while(printerList.getNumJobsCompleted() < numOfPrintJobs){
       clock++; //increase the clock
@@ -260,7 +261,7 @@ void processJobs()
                 printJobType printJob = printJobQueue[j].front();
                 printJobQueue[j].addWaitTime(printJob.getWaitingTime());
    	        printJobQueue[j].pop();
-                printerList.setPrinterBusy(printerList.getFreePrinterID(),printJob,
+                printerList.setPrinterBusy(printerList.assignRandomPrinter(),printJob,
 					  printerSpeed[printerList.getFreePrinterID()]);
          }   
       }
@@ -269,10 +270,10 @@ void processJobs()
    //calculate the average wait time for each job before it is completely printed
    for(int i=0;i<numTiers;i++){
       waitTime += printJobQueue[i].returnCurrentTierWaitTime();
-      cout<<waitTime<<printJobQueue[i].returnCurrentTierWaitTime();
+      cout<<"WAIT TIME = "<<printJobQueue[i].returnCurrentTierWaitTime()<<endl;
    }
    double avgWaitTime = ((double)waitTime)/numOfPrintJobs;
-   cout<<avgWaitTime<<endl; 
+   
    //calculate the total cost to print out all pages
    double totalCost = 0.0;
    double costOfPrinters[numOfPrinters]; 
@@ -398,7 +399,9 @@ void printTierResults(printJobQueueType printJobQueue[], int numTiers)
 	  <<printJobQueue[i].returnPagesPrinted()<<endl;
       cout<<"Total number of jobs completed by tier "<<i+1<<": "
           <<printJobQueue[i].returnNumJobsPerformed()<<endl;
-      cout<<"Total wait time in tier "<<i+1<<": "<<printJobQueue[i].returnCurrentTierWaitTime()<<" time units"<<endl<<endl;
+      cout<<"Average wait time in tier "<<i+1<<": "
+	  <<(double)printJobQueue[i].returnCurrentTierWaitTime()/printJobQueue[i].returnNumJobsPerformed()
+	  <<" time units"<<endl<<endl;
    }
    cout<<endl<<"************** END SIMULATION *****************"<<endl;
 }
