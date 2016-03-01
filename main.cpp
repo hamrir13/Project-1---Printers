@@ -8,6 +8,8 @@
 */
 
 #include <iostream>
+#include <fstream>
+#include <cstdlib>
 #include <iomanip>
 #include <stdlib.h>
 #include <cmath>
@@ -20,23 +22,27 @@ using namespace std;
    Post-condition: maxNumOfPages,printerSpeed,numOfPrintJobs,numOfPrinters are
                    all set to the appropriate values entered by the user.
 */
-void setParameters(int &numOfPrinters, int &maxNumOfPages, int *printerSpeed, 
-		   int &numOfPrintJobs, int &numTiers, int *cutOff, int &numJobsPerMin,
-		   int &numMaintPages, int &maintenenceTime, double &percentFail,
-                   int &offlineTime, double *printerCost);
+void setParameters(istream &in, int &numOfPrinters, int &maxNumOfPages, int &numOfPrintJobs, 
+										int &numJobsPerMin);
+
+void setPrinterParameters(istream &in, int numOfPrinters, int *printerSpeed, double *printerCost, 
+			int &numMaintPages, int &maintenenceTime, int &offlineTime, double &percentFail);
+
+void setQueueParameters(istream &in, int &numTiers, int *cutOff, int maxNumOfPages);
 //--------------------------------------------------------------------------------
 
 /* A void function that processes all of the jobs that are assigned 
    to the printers
 */
-void processJobs();
+void processJobs(istream &in, ostream &out);
 
 //--------------------------------------------------------------------------------
 
 /* A void function that creates of print job with a random number of
    pages and adds it to the printJobQueue
 */
-int createPrintJob(int whichTier, printJobQueueType printJobQueue[], int jobNum, int time, 		     int cutOff[]);
+int createPrintJob(ostream &out, int whichTier, printJobQueueType printJobQueue[], int jobNum, 
+		   int time, int cutOff[]);
 
 int numJobsArrived(int numJobsPerMin); 
 //--------------------------------------------------------------------------------
@@ -58,20 +64,30 @@ int factorial(int n);
 /* A void function that prints the results from the simulation and determines the efficiency 
    of the current implementation of printers. Then gives advice as to what they should do.
 */
-void printResults(int numOfPrinters, int maxNumOfPages, int numOfPrintJobs, int *printerSpeed, int time, 		   	   int totalNumPages, double avgWaitTime, double totalCost);
+void printResults(ostream &out, int numOfPrinters, int maxNumOfPages, int numOfPrintJobs, int numJobsPerMin,
+                  int *printerSpeed, double *printerCost, int numTiers, int cutOff[], int numMaintPages, 
+		  int maintenenceTime, double percentFail, int offlineTime, int time, int totalNumPages, 
+		  double avgWaitTime, double totalCost);
 
 //---------------------------------------------------------------------------------
 /* A void function to print the data from the tiers */
 
-void printTierResults(printJobQueueType printJobQueue[], int numTiers);
+void printTierResults(ostream &out, printJobQueueType printJobQueue[], int numTiers);
 
-void printPrinterResults(printerListType printerList, double costOfPrinter[], int numOfPrinters);
+void printPrinterResults(ostream &out, printerListType printerList, double costOfPrinter[], 
+			 int numOfPrinters, int time);
 //===================================================================================
 int main()
 {
 
-   char answer;
-   unsigned int seed;
+   char answer; //hold user answer for seed
+   unsigned int seed; //hold value of seed
+   
+   char filenameIN[30]; //hold the input filename
+   char filenameOUT[30]; //hold the output filename
+
+   ifstream in; //used to scan data from input file
+   ofstream out; //used to write to output file
 
    cout << "Would you like to enter your own seed for the simulation? [y/n]: ";
    cin >> answer;
@@ -87,156 +103,117 @@ int main()
 
    cout << "The seed used is " << seed << endl;
 
-/* cout << "Would you like to output to a file?: ";
-   cin >> answer;
-   if (answer == 'y' || answer == 'Y') {
-      printToFile = true;
-      cout << "Enter file name to write to: " << endl;
-      cin >> outName;
-      file.open(outName.c_str());
-   }
-   else
-   {
-       printToFile = false;
+   cout<<"What file should we take input from? ";
+   cin>>filenameIN;
+   in.open(filenameIN);
+   if(in.fail()){
+      cerr<<"Problem input file"<<endl;
+      exit(1);
    }
 
-   cout << "The seed used is ";
-   output(seed);
-*/
-
-   processJobs();
+   cout<<"Enter a filename for the results(no spaces): ";
+   cin>>filenameOUT;
+   out.open(filenameOUT);
+   if(out.fail()){
+      cerr<<"Problem output file"<<endl;
+      exit(1);
+   }
+  
+    
+   processJobs(in, out);
 
    return 0;
 }
 
 //=====================================================================================
-void setParameters(int &numOfPrinters, int &maxNumOfPages, int *printerSpeed, 
-      		   int &numOfPrintJobs, int &numTiers, int *cutOff, int &numJobsPerMin, 
-		   int &numMaintPages, int &maintenenceTime, double &percentFail, 
-		   int &offlineTime, double *printerCost)
+void setParameters(istream &in, int &numOfPrinters, int &maxNumOfPages, int &numOfPrintJobs, 
+		   int &numJobsPerMin)
 {
-   char ans;
    
-   cout << "Enter the number of printers to be used: "; 
-   cin >> numOfPrinters;
+   in >> numOfPrinters;
    if(numOfPrinters <=0)
       numOfPrinters = 3;
-   cout << endl;
 
-   cout << "Enter the maximum number of pages a printer can process: ";
-   cin >> maxNumOfPages;
+   in >> maxNumOfPages;
    if(maxNumOfPages <= 0)
       maxNumOfPages = 30;
-   cout << endl;
 
-   cout << "Enter number of print jobs to be accomplished: ";
-   cin >> numOfPrintJobs;
+   in >> numOfPrintJobs;
    if(numOfPrintJobs <= 0)
       numOfPrintJobs = 100;
-   cout << endl;
 
-   cout << "Enter the average number of jobs to be sent to the printer per time unit: ";
-   cin >> numJobsPerMin;
-   cout << endl;
+   in >> numJobsPerMin;
 
-   cout << "Do you want all of the printers to print at the same speed [y/n]: ";
-   cin >> ans;
-   if(ans == 'y'){
-      int printSpeed;
-      cout << "Enter the speed (pages/time unit) of the printer: ";
-      cin >> printSpeed;
-      if(printSpeed <= 0)
-         printSpeed = 10;
-      for(int i=0;i<numOfPrinters;i++){
-         printerSpeed[i]=printSpeed;
-      }
-      cout << endl;
-   }else{
-      for(int i=0; i<numOfPrinters; i++){
-         cout << "Enter speed for printer "<<i+1<<" : ";
-         cin >> printerSpeed[i];
-      }
-      cout<<endl;
+}
+
+void setPrinterParameters(istream &in, int numOfPrinters, int *printerSpeed, double *printerCost, 
+			  int &numMaintPages, int &maintenenceTime, int &offlineTime, double &percentFail) 
+{   
+   for(int i=0;i<numOfPrinters;i++){
+      in>>printerSpeed[i];
    }
 
-   cout<<"Do you want the cost of each printer to be the same? [y/n]: ";
-   cin >> ans;
-   if(ans == 'y'){
-      double cost;
-      cout<<"Enter the cost of the printers: ";
-      cin >> cost;
-      if(cost < 0)
-         cost = 0.005;
-      for(int i=0; i<numOfPrinters;i++)
-         printerCost[i] = cost;
-      cout<<endl;
-   }else{
-      for(int i=0;i<numOfPrinters;i++){
-         cout<<"Enter the cost of printer "<<i+1<<": ";
-         cin >> printerCost[i];
-      }
-      cout<<endl;
+   for(int i=0;i<numOfPrinters;i++){
+      in >> printerCost[i];
    }
+   
+   in >> numMaintPages;
+   in >> maintenenceTime;
 
-   cout << "Enter the number of Tiers in the waiting queue: ";
-   cin >> numTiers;
+   in >> percentFail;
+   in >> offlineTime;
+}
+
+
+void setQueueParameters(istream &in, int &numTiers, int *cutOff, int maxNumOfPages)
+{
+   in >> numTiers;
    if(numTiers <= 0)
       numTiers = 3;
    for(int i=0; i<numTiers-1; i++){
-      cout << "Enter the cut off for tier number "<<i+1<<": ";
-      cin >> cutOff[i];
+      in >> cutOff[i];
    }
    cutOff[numTiers-1] = maxNumOfPages;    
-   cout<<endl;
-
-   cout<< "Enter the number of pages a printer can print before needing maintenence: ";
-   cin >> numMaintPages;
-   cout<< "Enter the time that the printer will undergo maintenence: ";
-   cin >> maintenenceTime;
-   cout<<endl;
-
-   cout<<"Enter the percent chance that a printer will fail: ";
-   cin >> percentFail;
-   cout<<"If a printer fails, how long should it be offline for: ";
-   cin >> offlineTime;
-   cout<<endl;
 }
  
 
 //====================================================================================
-void processJobs()
+void processJobs(istream &in, ostream &out)
 {
    //variables for simulation parameters
-   int numOfPrinters, maxNumOfPages, numOfPrintJobs, numTiers, numJobsPerMin;
-   int  printerSpeed[10], cutOff[10], jobsArrived, numMaintPages, maintenenceTime;
-   int offlineTime;
+   int numOfPrinters, maxNumOfPages, numOfPrintJobs, numTiers, numJobsPerMin; 
+   int jobsArrived, numMaintPages, maintenenceTime, offlineTime;
+   
+   int  printerSpeed[10], cutOff[10];
    double percentFail, printerCost[10]; 
+   
    //variables for keeping track of data during simulation
    int jobNum = 0, clock = 0, totalNumPages = 0, waitTime = 0;  
 
-   //Set the simulation parameters. Each given by the user
-   setParameters(numOfPrinters, maxNumOfPages, printerSpeed, numOfPrintJobs, numTiers, 
-     	         cutOff, numJobsPerMin, numMaintPages, maintenenceTime, percentFail,
-		 offlineTime, printerCost);  
+   //Set the simulation parameters. Each given by file specified by the user
+   setParameters(in, numOfPrinters, maxNumOfPages, numOfPrintJobs, numJobsPerMin);  
+  
+   setPrinterParameters(in, numOfPrinters, printerSpeed, printerCost, numMaintPages, 
+			maintenenceTime, offlineTime, percentFail);
+   setQueueParameters(in, numTiers, cutOff, maxNumOfPages);
    
    //Create an array of queues that will hold the print jobs based on their priority
    printJobQueueType *printJobQueue;
    printJobQueue = new printJobQueueType[numTiers]; 
    
    //Declare a list of printers of size numOfPrinters (based on user input)
-   printerListType printerList(printerCost, numOfPrinters);
-   for(int i=0;i<numOfPrinters;i++)
-      cout<<"COST OF PRINTER "<<i+1<<": "<<printerList.getCurrentPrinterCost(i)<<endl;
+   printerListType printerList(numOfPrinters);
+   
    //Create Jobs and process them through the printers until all jobs are complete
    while(printerList.getNumJobsCompleted() < numOfPrintJobs){
       clock++; //increase the clock
-      cout<<endl<<"###### TIME UNIT "<<clock<<" ######"<<endl;
+      out<<endl<<"###### TIME UNIT "<<clock<<" ######"<<endl;
  
       //update the current status of the printers
-      printerList.checkFailure(percentFail,offlineTime);
-      printerList.updatePrinters(cout); 
+      printerList.checkFailure(out,percentFail,offlineTime);
+      printerList.updatePrinters(out); 
       if(printerList.getNumJobsCompleted() < numOfPrintJobs)
-         printerList.checkMaintenence(numMaintPages,maintenenceTime);
+         printerList.checkMaintenence(out,numMaintPages,maintenenceTime);
 
       //if neccessary, increase the waiting time of each job in the queue
       for(int i=0;i<numTiers;i++)
@@ -246,22 +223,22 @@ void processJobs()
       //create jobs until the maximum number of print jobs is completed
       if(jobNum < numOfPrintJobs){
          if((jobsArrived = numJobsArrived(numJobsPerMin)) > 0){
-            cout<<jobsArrived<<" job(s) created."<<endl;
+            out<<jobsArrived<<" job(s) created."<<endl;
             for(int i=0; i<jobsArrived; i++)
-               totalNumPages += createPrintJob(whichTier(numTiers), printJobQueue, ++jobNum, 									     clock, cutOff);         }
+               totalNumPages += createPrintJob(out, whichTier(numTiers), printJobQueue, ++jobNum, 									     clock, cutOff);         }
       }
       
       //Send Print Jobs to printers that are free
       for(int j=0;j<numTiers;j++){
          while(printerList.getNumberOfBusyPrinters() != numOfPrinters &&  
               !printJobQueue[j].empty()){
-                cout<<"Print Job Number "<<printJobQueue[j].front().getJobNumber()
-                    <<" was sent to printer "<<(printerList.getFreePrinterID()+1)
-		    <<" at time unit "<<clock<<endl;
+                int pNum = printerList.assignRandomPrinter();
+                out<<"Print Job Number "<<printJobQueue[j].front().getJobNumber()
+                    <<" was sent to printer "<<pNum+1<<" at time unit "<<clock<<endl;
                 printJobType printJob = printJobQueue[j].front();
                 printJobQueue[j].addWaitTime(printJob.getWaitingTime());
    	        printJobQueue[j].pop();
-                printerList.setPrinterBusy(printerList.assignRandomPrinter(),printJob,
+                printerList.setPrinterBusy(pNum,printJob,
 					  printerSpeed[printerList.getFreePrinterID()]);
          }   
       }
@@ -270,7 +247,6 @@ void processJobs()
    //calculate the average wait time for each job before it is completely printed
    for(int i=0;i<numTiers;i++){
       waitTime += printJobQueue[i].returnCurrentTierWaitTime();
-      cout<<"WAIT TIME = "<<printJobQueue[i].returnCurrentTierWaitTime()<<endl;
    }
    double avgWaitTime = ((double)waitTime)/numOfPrintJobs;
    
@@ -283,11 +259,13 @@ void processJobs()
    }
 
    //print the results of the simulation and determine efficiency
-   printResults(numOfPrinters, maxNumOfPages, numOfPrintJobs, printerSpeed, clock, totalNumPages,
-		avgWaitTime, totalCost);
-   printPrinterResults(printerList, costOfPrinters, numOfPrinters);
-   printTierResults(printJobQueue, numTiers);
+   printResults(out, numOfPrinters, maxNumOfPages, numOfPrintJobs, numJobsPerMin, 
+	        printerSpeed, printerCost, numTiers, cutOff, numMaintPages, maintenenceTime, 
+		percentFail, offlineTime, clock, totalNumPages,avgWaitTime, totalCost);
+   printPrinterResults(out, printerList, costOfPrinters, numOfPrinters, clock);
+   printTierResults(out, printJobQueue, numTiers);
 
+   
 }
 
 //=======================================================================================
@@ -317,7 +295,7 @@ int numJobsArrived(int numJobsPerMin)
 }       
    
 //======================================================================================
-int createPrintJob(int whichTier, printJobQueueType printJobQueue[], int jobNum, int time,		     int cutOff[])
+int createPrintJob(ostream &out, int whichTier, printJobQueueType printJobQueue[], int jobNum,                                int time, int cutOff[])
 {
    int numPages;
    if(whichTier == 0)
@@ -331,7 +309,7 @@ int createPrintJob(int whichTier, printJobQueueType printJobQueue[], int jobNum,
       printJobQueue[whichTier].push(printJob);
       printJobQueue[whichTier].addNumPages(numPages);
       printJobQueue[whichTier].increaseNumJobs();
-      cout<<"Print Job Number "<<jobNum<<" of size "<<numPages
+      out<<"Print Job Number "<<jobNum<<" of size "<<numPages
           <<" page(s) was placed in tier number "<<whichTier+1<<endl;
    
    return numPages;
@@ -372,48 +350,70 @@ int factorial(int n)
 }
  
 //=====================================================================================
-void printResults(int numOfPrinters, int maxNumOfPages, int numOfPrintJobs, 
-		  int *printerSpeed, int time, int totalNumPages, double avgWaitTime, 
-		  double totalCost)
+void printResults(ostream &out, int numOfPrinters, int maxNumOfPages, int numOfPrintJobs, 
+		  int numJobsPerMin, int *printerSpeed, double *printerCost, int numTiers, 
+		  int cutOff[], int numMaintPages, int maintenenceTime, double percentFail, int offlineTime,
+		  int time, int totalNumPages, double avgWaitTime, double totalCost)
 {
-   cout<<endl<<"************** FINAL RESULTS *****************"<<endl<<endl;
+   out<<endl<<"************** INPUT PARAMETERS *****************"<<endl<<endl;
    
-   //cout<<"Number of printers = "<<numOfPrinters<<endl;
-   //cout<<"The maxiumum number of pages a printer can process = "<<maxNumOfPages<<endl;
-   //cout<<"The number of jobs the printer processed = "<<numOfPrintJobs<<endl;
-   //cout<<"The speed (pages/time unit) of the printer = "<<*printerSpeed<<endl;
-   cout<<endl<<"Total time to complete simulation = "<<time<<" time unit."<<endl;
-   cout<<"The total number of pages printed: "<<totalNumPages<<endl;
-   cout<<"The total cost to print all the pages = $"<<totalCost<<endl;
-   cout<<"The average time for a Print Job to be completed = "<<avgWaitTime<<" time units."<<endl;
+   out<<"Number of printers = "<<numOfPrinters<<endl;
+   out<<"The maxiumum number of pages a printer can process = "<<maxNumOfPages<<endl;
+   out<<"The number of jobs the printer processed = "<<numOfPrintJobs<<endl;
+   out<<"The average number of jobs produced per time unit = "<<numJobsPerMin<<endl;
+   for(int i=0;i<numOfPrinters;i++)
+      out<<"The speed (pages/time unit) of the printer = "<<printerSpeed[i]<<endl;
+   out<<"The cost of ink and paper is about $0.1 per page printed"<<endl;
+   for(int i=0;i<numOfPrinters;i++)
+      out<<"The cost of printer "<<i+1<<" per page: $"<<printerCost[i]<<endl;
+   out<<"The total number of tiers in the job queue = "<<numTiers<<endl;
+   for(int i=0;i<numTiers;i++)
+      out<<"The cutoff for tier "<<i+1<<": "<<cutOff[i]<<" pages"<<endl;
+   out<<"The number of pages a printer can print before needing maintenence = "<<numMaintPages<<endl;
+   out<<"The amount of time a printer goes under maintenence: "<<maintenenceTime<<" time units"<<endl;
+   out<<"The percent chance that a printer will fail = "<<percentFail<<"%"<<endl;
+   out<<"The amount of time a printer goes offline due to failure = "<<offlineTime<<" time units"<<endl;
+
+   out<<endl<<"**************** FINAL RESULTS *********************"<<endl;
+   out<<endl<<"Total time to complete simulation = "<<time<<" time unit."<<endl;
+   out<<"The total number of pages printed: "<<totalNumPages<<endl;
+   out<<"The total cost to print all the pages = $"<<totalCost<<endl;
+   out<<"The average time for a Print Job to be completed = "<<avgWaitTime<<" time units."<<endl;
 
 
 }
 
 //=====================================================================================
-void printTierResults(printJobQueueType printJobQueue[], int numTiers)
+void printTierResults(ostream &out, printJobQueueType printJobQueue[], int numTiers)
 {
-   cout<<endl<<"************ TIER INFO ***************"<<endl;
+   out<<endl<<"************ TIER INFO ***************"<<endl;
    for(int i=0;i<numTiers;i++){
-      cout<<"Total pages printed by tier "<<i+1<<": "
+      out<<"Total pages printed by tier "<<i+1<<": "
 	  <<printJobQueue[i].returnPagesPrinted()<<endl;
-      cout<<"Total number of jobs completed by tier "<<i+1<<": "
+      out<<"Total number of jobs completed by tier "<<i+1<<": "
           <<printJobQueue[i].returnNumJobsPerformed()<<endl;
-      cout<<"Average wait time in tier "<<i+1<<": "
+      out<<"Average wait time in tier "<<i+1<<": "
 	  <<(double)printJobQueue[i].returnCurrentTierWaitTime()/printJobQueue[i].returnNumJobsPerformed()
 	  <<" time units"<<endl<<endl;
    }
-   cout<<endl<<"************** END SIMULATION *****************"<<endl;
+   out<<endl<<"************** END SIMULATION *****************"<<endl;
+   
 }
 
-void printPrinterResults(printerListType printerList, double costOfPrinter[], int numOfPrinters)
+void printPrinterResults(ostream &out, printerListType printerList, double costOfPrinter[], 
+			 int numOfPrinters, int time)
 {
-   cout<<endl<<"************ PRINTER INFO ************"<<endl;
+   out<<endl<<"************ PRINTER INFO ************"<<endl;
    for(int i=0;i<numOfPrinters;i++){
-      cout<<"Total pages printed by printer "<<i+1<<": "
+      out<<"Total pages printed by printer "<<i+1<<": "
           <<printerList.totalPagesPrintedByPrinter(i)<<endl;
-      cout<<"Total number of jobs completed by printer "
+      out<<"Total number of jobs completed by printer "
             <<printerList.totalJobsCompletedByPrinter(i)<<endl;
-      cout<<"Cost of printer "<<i+1<<": $"<<costOfPrinter[i]<<endl<<endl;
+      out<<"Cost of printer "<<i+1<<"(including cost of ink and paper): $"<<costOfPrinter[i]
+	 <<setprecision(2)<<endl;
+      out<<"Total time spent printing by printer #"<<i+1<<": "<<printerList.getTotalTimeBusy(i)<<endl;
+      out<<"Percent Utilization of printer "<<i+1<<": "
+	 <<setprecision(4)<<(double)printerList.getTotalTimeBusy(i)/time<<"%"<<endl;
    }
+
 }

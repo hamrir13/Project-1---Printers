@@ -192,6 +192,15 @@ public:
       //completed by this printer
       //Postcondition: value of numJobsCompleted is returned
 
+    void increaseTotalTimePrinting();
+      //Function to increase the total time spent printing
+      //of a specific printer
+      //Postcondition: totalTimePrinting++
+   
+    int getTotalPrintingTime();
+      //Function to return the total time spent printing
+      //Postcondition: value of totalTimePrinting is returned
+ 
 private:
    printJobType currentPrintJob;
    string status;
@@ -201,6 +210,7 @@ private:
    int totalPagesPrinted;
    int currentPagesPrinted;
    int numJobsCompleted;
+   int totalTimePrinting;
    double printerCost;
 };
 
@@ -208,7 +218,7 @@ private:
 class printerListType
 {
 public: 
-   printerListType(double *printerCost, int num = 1);
+   printerListType(int num = 1);
       //Constructor to initialize a list of printers
       //Postcondition: numOfPrinters = num
       //               A list of printers, specified by num,
@@ -237,9 +247,10 @@ public:
        //Function to return the number of jobs the printers have completed
        //Postcondition: The number of jobs completed is returned
     
-    double getCurrentPrinterCost(int printerID);
-       //Function to get the cost of the printerID printer
-       //Postcondition: the cost of the printerID printer is returned.
+    int getTotalTimeBusy(int printerID);
+       //Function to get the total printer time of printerID printer
+       //Postcondition: value of the total time spent printer of the 
+       //		specific printer is returned. 
 
     int totalPagesPrintedByPrinter(int printerNum);
        //Function to return the number of pages printed by
@@ -253,13 +264,13 @@ public:
        //Postcondition: value of the total job completed by 
        //		the current printer is returned
 
-    void checkFailure(double percentFail, int offlineTime);
+    void checkFailure(ostream &out, double percentFail, int offlineTime);
        //Function to check if the printers failed while printing.
        //Postcondition: If the printer fails, the status is set to 
        //		"failed" and remains offline for offlineTime
        //		time units.
 
-    void checkMaintenence(int numMaintPages, int maintenenceTime);
+    void checkMaintenence(ostream &out, int numMaintPages, int maintenenceTime);
        //Function to check to see if the printers need maintenence
        //Postcondition: The numMaintPages is the maxiumum number of
        //		pages the printer can print before needing maintenence.

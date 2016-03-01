@@ -197,15 +197,23 @@ int printerType::getTotalJobsCompleted()
    return numJobsCompleted;
 }
 
+void printerType::increaseTotalTimePrinting()
+{
+   totalTimePrinting++;
+}
+
+int printerType::getTotalPrintingTime()
+{
+   return totalTimePrinting;
+}
+
 //***************** printerListType ***************
 
-printerListType::printerListType(double *printerCost, int num)
+printerListType::printerListType(int num)
 {
    numOfPrinters = num;
    printers = new printerType[num];
    numJobsCompleted = 0;
-   for(int i=0; i<num; i++)
-      printers[i].setCost(printerCost[i]);
 }
 
 printerListType::~printerListType()
@@ -252,9 +260,9 @@ int printerListType::getNumJobsCompleted() const
    return numJobsCompleted;
 }
 
-double printerListType::getCurrentPrinterCost(int printerID)
+int printerListType::getTotalTimeBusy(int printerID)
 {
-   return printers[printerID].getPrinterCost();
+   return printers[printerID].getTotalPrintingTime();
 }
 
 int printerListType::getNumberOfBusyPrinters() const
@@ -280,7 +288,7 @@ int printerListType::totalJobsCompletedByPrinter(int printerNum)
    return printers[printerNum].getTotalJobsCompleted();
 }
 
-void printerListType::checkFailure(double percentFail, int offlineTime)
+void printerListType::checkFailure(ostream &out, double percentFail, int offlineTime)
 {
    double failure = percentFail/100.0;
 
@@ -291,13 +299,13 @@ void printerListType::checkFailure(double percentFail, int offlineTime)
          if(rDecimal < failure){
             printers[i].setToFailed();
             printers[i].setMaintTime(offlineTime);
-            cout<<"Printer number "<<i+1<<" failed."<<endl;
+            out<<"Printer number "<<i+1<<" failed."<<endl;
             break;
          }
       }else if(printers[i].returnStatus() == "failed" && 
 				printers[i].getMaintTime() > 0){
          printers[i].decreaseMaintTime();
-         cout<<"Printer number "<<i+1<<" failed and has "
+         out<<"Printer number "<<i+1<<" failed and has "
 	     <<printers[i].getMaintTime()<<" minutes left."<<endl;
          if(printers[i].getMaintTime() == 0)
             printers[i].setBusy();
@@ -305,17 +313,17 @@ void printerListType::checkFailure(double percentFail, int offlineTime)
    }
 }
    
-void printerListType::checkMaintenence(int numMaintPages, int maintenenceTime)
+void printerListType::checkMaintenence(ostream &out, int numMaintPages, int maintenenceTime)
 {
    for(int i=0;i<numOfPrinters;i++){
       if(printers[i].isFree()){
          if(printers[i].getCurrentPagesPrinted() >= numMaintPages){
-            cout<<"Total pages printer by printer "<<i+1<<" is "
+            out<<"Total pages printer by printer "<<i+1<<" is "
 		<<printers[i].getCurrentPagesPrinted()<<endl;
             printers[i].setToMaintenence();
             printers[i].setMaintTime(maintenenceTime);
             printers[i].resetCurrentPagesPrinted();
-            cout<<"Printer number "<<i+1<<" is under maintenence."<<endl;
+            out<<"Printer number "<<i+1<<" is under maintenence."<<endl;
          }
       }else if(printers[i].returnStatus() == "maintenence" && 
 			printers[i].getCurrentPagesPrinted() == 0){
@@ -323,9 +331,9 @@ void printerListType::checkMaintenence(int numMaintPages, int maintenenceTime)
             printers[i].decreaseMaintTime();
             if(printers[i].getMaintTime() == 0){
                printers[i].setFree();
-               cout<<"Printer Number "<<i+1<<" has finished maintenence."<<endl;
+               out<<"Printer Number "<<i+1<<" has finished maintenence."<<endl;
             }else
-	    cout<<"Printer number "<<i+1<<" has "<<printers[i].getMaintTime()
+	    out<<"Printer number "<<i+1<<" has "<<printers[i].getMaintTime()
 		<<" min left under maintenence."<<endl;
          }
       }
@@ -350,6 +358,7 @@ void printerListType::updatePrinters(ostream& outFile)
     for (i = 0; i < numOfPrinters; i++)
         if (!printers[i].isFree() && printers[i].getMaintTime() == 0)
         {
+            printers[i].increaseTotalTimePrinting();
             printers[i].decreasePrintPages(printers[i].getPrinterSpeed());
 
             if (printers[i].getRemainingPrintPages() <= 0)
