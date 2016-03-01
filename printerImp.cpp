@@ -309,7 +309,7 @@ void printerListType::checkMaintenence(ostream &out, int numMaintPages, int main
    for(int i=0;i<numOfPrinters;i++){
       if(printers[i].isFree()){
          if(printers[i].getCurrentPagesPrinted() >= numMaintPages){
-            out<<"Total pages printer by printer "<<i+1<<" is "
+            out<<"Total pages printed by printer "<<i+1<<" is "
 		<<printers[i].getCurrentPagesPrinted()<<endl;
             printers[i].setToMaintenence();
             printers[i].setMaintTime(maintenenceTime);

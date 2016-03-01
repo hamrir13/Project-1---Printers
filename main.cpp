@@ -78,7 +78,7 @@ void printTierResults(ostream &out, printJobQueueType printJobQueue[], int numTi
    job printed,  cost, number of pages printed, the time spent printing, printer utilization
 */
 
-void printPrinterResults(ostream &out, printerListType printerList, double costOfPrinter[], 
+void printPrinterResults(ostream &out, printerListType &printerList, double costOfPrinter[], 
 			 int numOfPrinters, int time);
 //===================================================================================
 int main()
@@ -271,31 +271,29 @@ void processJobs(istream &in, ostream &out)
    
    printTierResults(out, printJobQueue, numTiers);
 
-   printerList.~printerListType();   
 }
 
 //=======================================================================================
 int numJobsArrived(int numJobsPerMin) 
 {
-   double prob[numJobsPerMin];
-   double avgNumJobs = numJobsPerMin;
-   int result;
+   double prob; //store probablility of number of jobs
+   double avgNumJobs = numJobsPerMin; //average number of jobs per min
+   double cutoff = 0.95;
+   int result = 0;
+   int createdJobs = 0, k = 0; 
 
-   prob[0] = (pow(avgNumJobs, 0)*exp(-avgNumJobs))/factorial(0);
+   prob = (pow(avgNumJobs, 0)*exp(-avgNumJobs))/factorial(0);
    
-   for(int i=1; i<numJobsPerMin; i++)
-      prob[i] = prob[i-1] + (pow(avgNumJobs, i)*exp(-avgNumJobs))/factorial(i);
-
-   int rNum = rand() % 10;
-   double rDecimal = rNum/9.0;
-
-   for(int i=0; i<numJobsPerMin; i++){
-      if(rDecimal < prob[i]){
-         result = i;
-         break;
-      }else if(rDecimal > prob[numJobsPerMin-1])
-         result = numJobsPerMin;
-   }
+   int rNum = rand() % 101;
+   double rDecimal = rNum/100.0;
+ 
+   while(prob <= rDecimal && prob <= cutoff){
+      createdJobs++;
+      k++;
+      prob += (pow(avgNumJobs,k)*exp(-avgNumJobs))/factorial(k);
+      if(prob >= rDecimal || prob >= cutoff)
+         result = createdJobs;
+   }  
    return result;
 
 }       
@@ -307,7 +305,7 @@ int createPrintJob(ostream &out, int whichTier, printJobQueueType printJobQueue[
    if(whichTier == 0)
       numPages = rand() % cutOff[whichTier]+1;
    else
-      numPages = rand() % (cutOff[whichTier]-cutOff[whichTier-1]) + (cutOff[whichTier-1]+1);//select a random number of pages for the job
+      numPages = rand() % (cutOff[whichTier]-cutOff[whichTier-1]) + (cutOff[whichTier-1]+1);
    int wTime = 0; //set the waitTime for the Print Jobs to zero, initially
    
    printJobType printJob(jobNum, time, numPages, wTime); //create the print job
@@ -328,11 +326,17 @@ int whichTier(int numTiers)
    double rDecimal;
    int rNum, result;
    int i;
+   if(numTiers == 2){
+      prob[0] = (1.0/2);
+   }else if(numTiers == 3){
+      prob[0] = (1.0/3);
+      prob[1] = prob[0]+(1.0/3);
+   }else{
+      prob[0] = 1.0/3;
+      for(i=1; i<numTiers-1;i++)
+         prob[i] = prob[i-1] + (1.0/(3+i));
+   }
    
-   prob[0] = (1.0/3);
-   for(i=1; i<numTiers-1;i++)
-      prob[i] = prob[i-1] + (1.0/(3+i));
-
    rNum = rand() % 10;
    rDecimal = rNum/10.0;
 
@@ -406,8 +410,9 @@ void printTierResults(ostream &out, printJobQueueType printJobQueue[], int numTi
    
 }
 
-void printPrinterResults(ostream &out, printerListType printerList, double costOfPrinter[], 
-			 int numOfPrinters, int time)
+//=====================================================================================
+void printPrinterResults(ostream &out, printerListType &printerList, 
+			double costOfPrinter[], int numOfPrinters, int time)
 {
    out<<endl<<"************ PRINTER INFO ************"<<endl;
    for(int i=0;i<numOfPrinters;i++){
