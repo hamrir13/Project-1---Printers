@@ -1,3 +1,14 @@
+/* Names: B. Hamrick, T. Ferguson, R. Stingel
+   Date: 3.1.16
+   Class: CSC 3710
+
+   This is a header file contaning four classes:
+   	printJobType
+	printerType
+ 	printerListType
+	printJobQueueType
+*/
+
 #include <fstream>
 #include <string>
 #include <queue>
@@ -110,14 +121,6 @@ public:
       //Function to decrease the amount of pages to print by p.
       //Postcondition: remainingPages -= p;
     
-    void setCost(int cost);
-      //Function to set the cost of the printer
-      //Postcondition: printerCost = cost
-
-    double getPrinterCost();
-      //Function to return the cost of the printer
-      //Postcondition: return printerCost
-     
     void setPrinterSpeed(int pSpeed);
        //Function to set the printer speed
        //Postcondition: printerSpeed = pSpeed.
@@ -211,7 +214,6 @@ private:
    int currentPagesPrinted;
    int numJobsCompleted;
    int totalTimePrinting;
-   double printerCost;
 };
 
 //****************** printerListType *****************

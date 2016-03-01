@@ -46,7 +46,6 @@ int createPrintJob(ostream &out, int whichTier, printJobQueueType printJobQueue[
 
 int numJobsArrived(int numJobsPerMin); 
 //--------------------------------------------------------------------------------
-
 /* An int function that returns which tier the next print job assingment will go in.
    Post-condition: the tier of the next job assignment is returned to determine the
                    number of pages that will be produced. 
@@ -57,10 +56,9 @@ int whichTier(int numTiers);
 /* An int function that returns the factorial of the integer in the parameter. 
    Post-condition: the factorial of the parameter is returned.
 */
-
 int factorial(int n);
-//---------------------------------------------------------------------------------
 
+//---------------------------------------------------------------------------------
 /* A void function that prints the results from the simulation and determines the efficiency 
    of the current implementation of printers. Then gives advice as to what they should do.
 */
@@ -70,9 +68,15 @@ void printResults(ostream &out, int numOfPrinters, int maxNumOfPages, int numOfP
 		  double avgWaitTime, double totalCost);
 
 //---------------------------------------------------------------------------------
-/* A void function to print the data from the tiers */
-
+/* A void function to print the data from the tiers including the number of pages printed, 
+   the avergage wait time in a tier and the total number of jobs in a tier
+*/
 void printTierResults(ostream &out, printJobQueueType printJobQueue[], int numTiers);
+
+//---------------------------------------------------------------------------------
+/* A void function to print the data of the printers. This data includes, number of 
+   job printed,  cost, number of pages printed, the time spent printing, printer utilization
+*/
 
 void printPrinterResults(ostream &out, printerListType printerList, double costOfPrinter[], 
 			 int numOfPrinters, int time);
@@ -183,7 +187,6 @@ void processJobs(istream &in, ostream &out)
    //variables for simulation parameters
    int numOfPrinters, maxNumOfPages, numOfPrintJobs, numTiers, numJobsPerMin; 
    int jobsArrived, numMaintPages, maintenenceTime, offlineTime;
-   
    int  printerSpeed[10], cutOff[10];
    double percentFail, printerCost[10]; 
    
@@ -195,6 +198,7 @@ void processJobs(istream &in, ostream &out)
   
    setPrinterParameters(in, numOfPrinters, printerSpeed, printerCost, numMaintPages, 
 			maintenenceTime, offlineTime, percentFail);
+   
    setQueueParameters(in, numTiers, cutOff, maxNumOfPages);
    
    //Create an array of queues that will hold the print jobs based on their priority
@@ -262,10 +266,12 @@ void processJobs(istream &in, ostream &out)
    printResults(out, numOfPrinters, maxNumOfPages, numOfPrintJobs, numJobsPerMin, 
 	        printerSpeed, printerCost, numTiers, cutOff, numMaintPages, maintenenceTime, 
 		percentFail, offlineTime, clock, totalNumPages,avgWaitTime, totalCost);
+   
    printPrinterResults(out, printerList, costOfPrinters, numOfPrinters, clock);
+   
    printTierResults(out, printJobQueue, numTiers);
 
-   
+   printerList.~printerListType();   
 }
 
 //=======================================================================================
@@ -409,11 +415,13 @@ void printPrinterResults(ostream &out, printerListType printerList, double costO
           <<printerList.totalPagesPrintedByPrinter(i)<<endl;
       out<<"Total number of jobs completed by printer "
             <<printerList.totalJobsCompletedByPrinter(i)<<endl;
-      out<<"Cost of printer "<<i+1<<"(including cost of ink and paper): $"<<costOfPrinter[i]
-	 <<setprecision(2)<<endl;
-      out<<"Total time spent printing by printer #"<<i+1<<": "<<printerList.getTotalTimeBusy(i)<<endl;
+      out<<"Cost of printer "<<i+1<<"(including cost of ink and paper): $"
+	 <<costOfPrinter[i]<<setprecision(2)<<endl;
+      out<<"Total time spent printing by printer #"<<i+1<<": "
+  	 <<printerList.getTotalTimeBusy(i)<<endl;
       out<<"Percent Utilization of printer "<<i+1<<": "
-	 <<setprecision(4)<<(double)printerList.getTotalTimeBusy(i)/time<<"%"<<endl;
+	 <<setprecision(4)<<((double)printerList.getTotalTimeBusy(i)/time)*100
+	 <<"%"<<endl<<endl;
    }
 
 }

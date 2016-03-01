@@ -64,6 +64,7 @@ printerType::printerType()
    totalPagesPrinted = 0;
    currentPagesPrinted = 0;
    numJobsCompleted = 0;
+   totalTimePrinting = 0;
 }
 
 bool printerType::isFree() const
@@ -109,16 +110,6 @@ int printerType::getRemainingPrintPages() const
 void printerType::decreasePrintPages(int p)
 {
    remainingPages -= p;
-}
-
-void printerType::setCost(int cost)
-{
-   printerCost = cost;
-}
-
-double printerType::getPrinterCost()
-{
-   return printerCost;
 }
 
 void printerType::setPrinterSpeed(int pSpeed)
@@ -305,8 +296,8 @@ void printerListType::checkFailure(ostream &out, double percentFail, int offline
       }else if(printers[i].returnStatus() == "failed" && 
 				printers[i].getMaintTime() > 0){
          printers[i].decreaseMaintTime();
-         out<<"Printer number "<<i+1<<" failed and has "
-	     <<printers[i].getMaintTime()<<" minutes left."<<endl;
+         out<<"Printer number "<<i+1<<" has "
+	     <<printers[i].getMaintTime()<<" minutes left under failure."<<endl;
          if(printers[i].getMaintTime() == 0)
             printers[i].setBusy();
       }
