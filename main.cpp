@@ -13,7 +13,11 @@
 #include <iomanip>
 #include <stdlib.h>
 #include <cmath>
-#include "printers.h"
+#include "printJobType.h"
+#include "printerType.h"
+#include "printerListType.h"
+#include "printJobQueueType.h"
+
 
 using namespace std;
 
@@ -140,7 +144,7 @@ void setParameters(istream &in, int &numOfPrinters, int &maxNumOfPages, int &num
 
    in >> maxNumOfPages;
    if(maxNumOfPages <= 0)
-      maxNumOfPages = 30;
+      maxNumOfPages = 50;
 
    in >> numOfPrintJobs;
    if(numOfPrintJobs <= 0)
