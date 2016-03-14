@@ -22,17 +22,26 @@
 using namespace std;
 
 
-/* A void function that sets the parameters to being the simulation.
+/* A void function that sets the parameters for the simulation.
    Post-condition: maxNumOfPages,printerSpeed,numOfPrintJobs,numOfPrinters are
                    all set to the appropriate values entered by the user.
 */
-void setParameters(istream &in, int &numOfPrinters, int &maxNumOfPages, int &numOfPrintJobs, 
+void setParameters(istream &in, ostream &out, int &numOfPrinters, int &maxNumOfPages, int &numOfPrintJobs, 
 										int &numJobsPerMin);
 
-void setPrinterParameters(istream &in, int numOfPrinters, int *printerSpeed, double *printerCost, 
+//--------------------------------------------------------------------------------
+/* A void function that sets the parameters for the printer.
+   Post-condition: All of the parameters for the printers are set to appropriate values
+		   from the user or a file.
+*/
+void setPrinterParameters(istream &in, ostream &out, int numOfPrinters, int *printerSpeed, double *printerCost, 
 			int &numMaintPages, int &maintenenceTime, int &offlineTime, double &percentFail);
 
-void setQueueParameters(istream &in, int &numTiers, int *cutOff, int maxNumOfPages);
+//--------------------------------------------------------------------------------
+/* A void function that sets the parameters for the tiered queue.
+   Post-condition: The number of tiers is defined and the cutoffs for each tier is defined.
+*/
+void setQueueParameters(istream &in, ostream &out, int &numTiers, int *cutOff, int maxNumOfPages);
 //--------------------------------------------------------------------------------
 
 /* A void function that processes all of the jobs that are assigned 
@@ -88,7 +97,7 @@ void printPrinterResults(ostream &out, printerListType &printerList, double cost
 int main()
 {
 
-   char answer; //hold user answer for seed
+   char answer, param; //hold user answer for seed and parameters
    unsigned int seed; //hold value of seed
    
    char filenameIN[30]; //hold the input filename
@@ -111,77 +120,122 @@ int main()
 
    cout << "The seed used is " << seed << endl;
 
-   cout<<"What file should we take input from? ";
-   cin>>filenameIN;
-   in.open(filenameIN);
-   if(in.fail()){
-      cerr<<"Problem input file"<<endl;
-      exit(1);
-   }
+   cout<< "Do you want to enter the parameters manually? [y/n]: ";
+   cin >> param;
 
-   cout<<"Enter a filename for the results(no spaces): ";
-   cin>>filenameOUT;
-   out.open(filenameOUT);
-   if(out.fail()){
-      cerr<<"Problem output file"<<endl;
-      exit(1);
+   if(param == 'y'){
+      processJobs(cin, cout);
+   }else{
+      cout<<"What file should we take input from? ";
+      cin>>filenameIN;
+      in.open(filenameIN);
+      if(in.fail()){
+         cerr<<"Problem input file"<<endl;
+         exit(1);
+      }
+
+      cout<<"Enter a filename for the results(no spaces): ";
+      cin>>filenameOUT;
+      out.open(filenameOUT);
+      if(out.fail()){
+         cerr<<"Problem output file"<<endl;
+         exit(2);
+      }
+
+      processJobs(in, out);
    }
-  
-    
-   processJobs(in, out);
 
    return 0;
 }
 
 //=====================================================================================
-void setParameters(istream &in, int &numOfPrinters, int &maxNumOfPages, int &numOfPrintJobs, 
+void setParameters(istream &in, ostream &out, int &numOfPrinters, int &maxNumOfPages, int &numOfPrintJobs, 
 		   int &numJobsPerMin)
 {
-   
+   if(out == cout)
+      out<<"Enter the number of printers to use: ";
    in >> numOfPrinters;
    if(numOfPrinters <=0)
       numOfPrinters = 3;
 
+   if(out == cout)
+      out<<"Enter the maximum number of pages a job can be: ";
    in >> maxNumOfPages;
    if(maxNumOfPages <= 0)
       maxNumOfPages = 50;
 
+   if(out == cout)
+      out<<"Enter the number of jobs to complete: ";
    in >> numOfPrintJobs;
    if(numOfPrintJobs <= 0)
       numOfPrintJobs = 100;
 
+   if(out == cout)
+      out<<"Enter the average number of jobs to be created per time unit: ";
    in >> numJobsPerMin;
 
 }
 
-void setPrinterParameters(istream &in, int numOfPrinters, int *printerSpeed, double *printerCost, 
+void setPrinterParameters(istream &in, ostream &out, int numOfPrinters, int *printerSpeed, double *printerCost, 
 			  int &numMaintPages, int &maintenenceTime, int &offlineTime, double &percentFail) 
 {   
-   for(int i=0;i<numOfPrinters;i++){
-      in>>printerSpeed[i];
+   if(out == cout){
+      for(int i=0;i<numOfPrinters;i++){
+         out<<"Enter the speed of printer "<<i+1<<": ";
+         in>>printerSpeed[i];
+      }
+   }else{
+      for(int i=0;i<numOfPrinters;i++)
+         in>>printerSpeed[i];
    }
 
-   for(int i=0;i<numOfPrinters;i++){
-      in >> printerCost[i];
+   if(out == cout){
+      for(int i=0;i<numOfPrinters;i++){
+         out<<"Enter the cost of printer "<<i+1<<" per page printed: ";
+         in>>printerCost[i];
+      }
+   }else{
+      for(int i=0;i<numOfPrinters;i++)
+         in>>printerCost[i];
    }
    
+   if(out == cout)
+      out<<"Enter the number of pages a printer can print before undergoing maintenence: ";
    in >> numMaintPages;
+   
+   if(out == cout)
+      out<<"Enter the time a printer should undergo maintenence: ";
    in >> maintenenceTime;
 
+   if(out == cout)
+      out<<"Enter the percent chance that a printer fails: ";
    in >> percentFail;
+
+   if(out == cout)
+      out<<"Enter the time a printer should go offline after it fails: ";
    in >> offlineTime;
 }
 
 
-void setQueueParameters(istream &in, int &numTiers, int *cutOff, int maxNumOfPages)
+void setQueueParameters(istream &in, ostream &out, int &numTiers, int *cutOff, int maxNumOfPages)
 {
+   if(out == cout)
+      out<<"Enter the number of tiers in the queue: ";
    in >> numTiers;
    if(numTiers <= 0)
       numTiers = 3;
-   for(int i=0; i<numTiers-1; i++){
-      in >> cutOff[i];
+   if(out == cout){
+      for(int i=0; i<numTiers-1; i++){
+         out<<"Enter the page number cutoff for tier "<<i+1<<": ";
+         in >> cutOff[i];
+      }
+      cutOff[numTiers-1] = maxNumOfPages;    
+   }else{
+      for(int i=0; i<numTiers-1; i++){
+         in >> cutOff[i];
+      }
+      cutOff[numTiers-1] = maxNumOfPages;    
    }
-   cutOff[numTiers-1] = maxNumOfPages;    
 }
  
 
@@ -192,18 +246,18 @@ void processJobs(istream &in, ostream &out)
    int numOfPrinters, maxNumOfPages, numOfPrintJobs, numTiers, numJobsPerMin; 
    int jobsArrived, numMaintPages, maintenenceTime, offlineTime;
    int  printerSpeed[10], cutOff[10];
-   double percentFail, printerCost[10]; 
+   double percentFail, printerCost[10];
    
    //variables for keeping track of data during simulation
    int jobNum = 0, clock = 0, totalNumPages = 0, waitTime = 0;  
 
    //Set the simulation parameters. Each given by file specified by the user
-   setParameters(in, numOfPrinters, maxNumOfPages, numOfPrintJobs, numJobsPerMin);  
+   setParameters(in, out, numOfPrinters, maxNumOfPages, numOfPrintJobs, numJobsPerMin);  
   
-   setPrinterParameters(in, numOfPrinters, printerSpeed, printerCost, numMaintPages, 
+   setPrinterParameters(in, out, numOfPrinters, printerSpeed, printerCost, numMaintPages, 
 			maintenenceTime, offlineTime, percentFail);
    
-   setQueueParameters(in, numTiers, cutOff, maxNumOfPages);
+   setQueueParameters(in, out, numTiers, cutOff, maxNumOfPages);
    
    //Create an array of queues that will hold the print jobs based on their priority
    printJobQueueType *printJobQueue;
